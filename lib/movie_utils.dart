@@ -82,9 +82,12 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
   @override
   void dispose() {
     if (_useMediaKit) {
-      _player?.dispose();
-      if (onDisposedPlayer != null) {
-        onDisposedPlayer?.call();
+      if (onDisposedPlayer == null) {
+        _player?.dispose();
+      } else {
+        _player?.dispose().then((_) {
+          onDisposedPlayer?.call();
+        });
       }
     }
     super.dispose();
