@@ -49,12 +49,12 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
       _player = Player();
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         _installErrorListener();
-        await _player!.open(Media(path), play: false);
-        if (!mounted) return;
         _installDurationListener();
         if (onPlaybackFinished != null) {
           _installCompletionListener();
         }
+        await _player!.open(Media(path), play: false);
+        if (!mounted) return;
         setState(() {
           _controller = VideoController(_player!);
         });
