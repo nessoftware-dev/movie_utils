@@ -4,6 +4,23 @@ import 'package:flutter_to_airplay/flutter_to_airplay.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
+// === CRITICAL: Movie Player Lifecycle Management ===
+// The media_kit Player is extremely sensitive to overlapping instances.
+// Problem: If two Player instances exist simultaneously or if a Player is
+// created before the previous one is fully disposed, an exception occurs.
+//
+// Why MoviePlayerWidget.didUpdateWidget will not work:
+// - didUpdateWidget() is called while the old State is still alive
+// - Creating a new Player in didUpdateWidget() causes overlap with the old one
+// - The old Player is still alive when the new Player is created, which will always throw an exception
+//
+// Why simply returning a new MoviePlayerWidget widget doesn't work:
+// - Flutter may reuse the same State object if it thinks widgets are the same type
+// - Even with ValueKey(path), Flutter might update the State in-place first
+// - This causes the old player to outlive the new one during transition
+//
+// Solution: Force complete disposal before recreation which should be done via onDisposedPlayer.
+
 class MoviePlayerWidget extends StatefulWidget {
   final String path;
   final bool? forceMediaKit;
@@ -92,9 +109,7 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
       );
     }
     if (_useMediaKit && (_controller == null)) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
     if (_useMediaKit) {
       return Video(
