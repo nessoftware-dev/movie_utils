@@ -11,10 +11,11 @@ Key benefits:
 - **Ready-to-use playback controls and callbacks**, including an optional
   playback-finished notification.
 
-`MoviePlayerScreen` displays video in the space provided by its parent widget.
-It uses `FlutterAVPlayerView` by default on iOS. Set `forceMediaKit: true` to
-use media_kit on iOS when you need its callbacks, such as
-`onPlaybackFinished`. On other platforms, it uses media_kit.
+`MoviePlayerWidget` displays video in the space provided by its parent widget.
+
+On iOS, `MoviePlayerWidget` uses `FlutterAVPlayerView` by default. Providing
+`onPlaybackFinished` automatically selects media_kit instead. You can also set
+`forceMediaKit: true` to explicitly select media_kit on iOS.
 
 Use `onPlaybackFinished` when your app needs to know that playback has ended,
 for example, to advance to the next movie or image in a continuous sequence.
@@ -45,12 +46,12 @@ void main() {
 
 ## Usage
 
-`MoviePlayerScreen` fills the bounded space provided by its parent. In a
+`MoviePlayerWidget` fills the bounded space provided by its parent. In a
 `Scaffold`, it uses the available body area:
 
 ```dart
 Scaffold(
-  body: MoviePlayerScreen(path: videoPath),
+  body: MoviePlayerWidget(path: videoPath),
 )
 ```
 
@@ -59,7 +60,7 @@ For inline playback in a smaller area, give it a bounded area, for example:
 ```dart
 SizedBox(
   height: 240,
-  child: MoviePlayerScreen(path: videoPath),
+  child: MoviePlayerWidget(path: videoPath),
 )
 ```
 
@@ -67,11 +68,11 @@ If placing it in a `Column`, use `Expanded` when the parent has a bounded
 height. The media_kit renderer preserves the video's aspect ratio by default,
 leaving any extra space around the video.
 
-On iOS, `MoviePlayerScreen` uses `FlutterAVPlayerView` by default. Set
+On iOS, `MoviePlayerWidget` uses `FlutterAVPlayerView` by default. Set
 `forceMediaKit: true` to use media_kit instead:
 
 ```dart
-MoviePlayerScreen(
+MoviePlayerWidget(
   path: videoPath,
   forceMediaKit: true,
   onPlaybackFinished: playNextItem,
@@ -87,7 +88,7 @@ The parameter controls the playback backend, not widget layout or navigation.
 ## Playback lifecycle
 
 The playback configuration (`path`, `forceMediaKit`, and callbacks) is read when
-`MoviePlayerScreen` is mounted and is not updated while it remains mounted.
+`MoviePlayerWidget` is mounted and is not updated while it remains mounted.
 To play another movie or change the configuration, replace its state: remove
 the current widget from the tree before adding it again, or give each playback
 a distinct key so Flutter creates a new state and disposes the previous player.

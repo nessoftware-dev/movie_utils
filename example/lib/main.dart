@@ -85,6 +85,9 @@ class _PlaybackExamplePageState extends State<PlaybackExamplePage> {
           },
         ),
         const SizedBox(height: 12),
+        Text('New Window shows the movie in a new screen without using onPlaybackFinished.'),
+        Text('Embedded displays the movie below with using onPlaybackFinished.'),
+        const SizedBox(height: 20),
         DropdownButtonFormField<_MovieType>(
           key: const ValueKey('movie-type-dropdown'),
           initialValue: _movieType,
@@ -117,11 +120,10 @@ class _PlaybackExamplePageState extends State<PlaybackExamplePage> {
 
   Widget _buildPlayerView() {
     final playingUrl = _playingUrl;
-
     return ColoredBox(
       color: Colors.black,
       child: playingUrl != null
-          ? MoviePlayerScreen(
+          ? MoviePlayerWidget(
               path: playingUrl,
               forceMediaKit: _useEmbed,
               onPlaybackFinished: () => _onPlaybackFinished(stopEmbedded: true),
@@ -152,7 +154,7 @@ class _PlaybackExamplePageState extends State<PlaybackExamplePage> {
     if (!_useEmbed) {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => _MoviePlaybackPage(path: url, onPlaybackFinished: _onPlaybackFinished),
+          builder: (_) => _MoviePlaybackPage(path: url),
         ),
       );
       return;
@@ -171,15 +173,14 @@ class _PlaybackExamplePageState extends State<PlaybackExamplePage> {
 
 class _MoviePlaybackPage extends StatelessWidget {
   final String path;
-  final VoidCallback onPlaybackFinished;
 
-  const _MoviePlaybackPage({required this.path, required this.onPlaybackFinished});
+  const _MoviePlaybackPage({required this.path});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Movie Playback')),
-      body: MoviePlayerScreen(path: path, onPlaybackFinished: onPlaybackFinished),
+      body: MoviePlayerWidget(path: path),
     );
   }
 }

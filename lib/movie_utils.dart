@@ -4,13 +4,13 @@ import 'package:flutter_to_airplay/flutter_to_airplay.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
-class MoviePlayerScreen extends StatefulWidget {
+class MoviePlayerWidget extends StatefulWidget {
   final String path;
   final bool? forceMediaKit;
   final VoidCallback? onPlaybackFinished;
   final VoidCallback? onDisposedPlayer;
 
-  const MoviePlayerScreen({
+  const MoviePlayerWidget({
     super.key,
     required this.path,
     this.forceMediaKit,
@@ -19,10 +19,10 @@ class MoviePlayerScreen extends StatefulWidget {
   });
 
   @override
-  State<MoviePlayerScreen> createState() => _MoviePlayerScreen();
+  State<MoviePlayerWidget> createState() => _MoviePlayerWidget();
 }
 
-class _MoviePlayerScreen extends State<MoviePlayerScreen> {
+class _MoviePlayerWidget extends State<MoviePlayerWidget> {
   late String path;
   late bool forceMediaKit;
   late VoidCallback? onPlaybackFinished;
@@ -35,7 +35,7 @@ class _MoviePlayerScreen extends State<MoviePlayerScreen> {
   String? _movieError;
   bool _playbackFinishedNotified = false;
 
-  _MoviePlayerScreen();
+  _MoviePlayerWidget();
 
   @override
   void initState() {
@@ -44,7 +44,7 @@ class _MoviePlayerScreen extends State<MoviePlayerScreen> {
     forceMediaKit = widget.forceMediaKit ?? false;
     onPlaybackFinished = widget.onPlaybackFinished;
     onDisposedPlayer = widget.onDisposedPlayer;
-    _useMediaKit = !Platform.isIOS || forceMediaKit;
+    _useMediaKit = !Platform.isIOS || forceMediaKit || (onPlaybackFinished != null);
     if (_useMediaKit) {
       _player = Player();
       WidgetsBinding.instance.addPostFrameCallback((_) async {
