@@ -158,20 +158,22 @@ void onPlaybackFinished() {
 void onDisposedPlayer() {
   if (!mounted) return;
   final String? nextPath = getNextMoviePath();
-  setState(() {
-    _currentPath = nextPath;
-    _playlistDone = nextPath == null;
-    _message = null;
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    setState(() {
+      _currentPath = nextPath;
+      _playlistDone = nextPath == null;
+      _message = null;
+    });
   });
 }
 ```
 
-We use this approach because the playlist may contain both movies and images. 
-Although `media_kit` can switch to the next movie by changing the media loaded in the player, 
-doing so would require checking what comes next and handling movie-to-movie transitions 
-differently from movie-to-image transitions. Recreating the player after disposal keeps 
-the mixed-media playlist logic simpler and avoids reconfiguring playback listeners, such as 
-duration handling.
+We use this approach because playlists may contain both movies and images, and recreating 
+the player makes switching between them straightforward. Additionally, although `media_kit` 
+supports changing the movie directly, reusing the player would require additional logic 
+to handle movie-to-movie and movie-to-image transitions, manage player state across the 
+widget lifecycle (`initState` and `didUpdateWidget`), and reconfigure playback listeners. 
+Recreating the player keeps the implementation simpler and requires less code.
 
 If media_kit reports a playback error, the player shows an error message for
 five seconds and then calls `onPlaybackFinished`, if provided. Disposing the

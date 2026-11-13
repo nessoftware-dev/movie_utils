@@ -1,6 +1,6 @@
 name: movie_utils
-description: "A ready-to-use Flutter video player with platform-specific playback and playback-finished notifications."
-version: 0.0.1
+description: "A ready-to-use Flutter video player with AirPlay support on iOS and playback-finished notification."
+version: 1.0.0
 homepage: https://github.com/nessoftware-dev/movie_utils
 repository: https://github.com/nessoftware-dev/movie_utils
 issue_tracker: https://github.com/nessoftware-dev/movie_utils/issues
