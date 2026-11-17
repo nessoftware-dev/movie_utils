@@ -149,13 +149,12 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
   void _installDurationListener() {
     _player!.stream.duration.listen((Duration duration) {
       if (duration > Duration.zero) {
+        if (!mounted || _movieError != null) return;
         if (!isReady) {
           _player!.play();
         }
         isReady = true;
-        if (mounted) {
-          setState(() {});
-        }
+        setState(() {});
       }
     });
   }
