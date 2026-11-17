@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_to_airplay/flutter_to_airplay.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -24,6 +25,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 class MoviePlayerWidget extends StatefulWidget {
   final String path;
   final bool? forceMediaKit;
+  final bool? preferDesktopControls;
   final VoidCallback? onPlaybackFinished;
   final VoidCallback? onDisposedPlayer;
 
@@ -31,6 +33,7 @@ class MoviePlayerWidget extends StatefulWidget {
     super.key,
     required this.path,
     this.forceMediaKit,
+    this.preferDesktopControls,
     this.onPlaybackFinished,
     this.onDisposedPlayer,
   });
@@ -42,6 +45,7 @@ class MoviePlayerWidget extends StatefulWidget {
 class _MoviePlayerWidget extends State<MoviePlayerWidget> {
   late String path;
   late bool forceMediaKit;
+  late bool preferDesktopControls;
   late VoidCallback? onPlaybackFinished;
   late VoidCallback? onDisposedPlayer;
 
@@ -59,9 +63,10 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
     super.initState();
     path = widget.path;
     forceMediaKit = widget.forceMediaKit ?? false;
+    preferDesktopControls = widget.preferDesktopControls ?? false;
     onPlaybackFinished = widget.onPlaybackFinished;
     onDisposedPlayer = widget.onDisposedPlayer;
-    _useMediaKit = !Platform.isIOS || forceMediaKit || (onPlaybackFinished != null);
+    _useMediaKit = !Platform.isIOS || forceMediaKit || preferDesktopControls || (onPlaybackFinished != null);
     if (_useMediaKit) {
       _player = Player();
       WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -101,6 +106,53 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
     );
   }
 
+  Duration _clampSeekPosition(Duration position) {
+    final maxDuration = _player?.state.duration ?? Duration.zero;
+    if (position < Duration.zero) {
+      return Duration.zero;
+    }
+    if (maxDuration > Duration.zero && position > maxDuration) {
+      return maxDuration;
+    }
+    return position;
+  }
+
+  Map<ShortcutActivator, void Function()> _materialDesktopKeyboardShortcuts(
+    BuildContext context,
+  ) {
+    return {
+      // Keep the media_kit defaults for play/pause, seeking and fullscreen,
+      // but intentionally omit the volume hotkeys to avoid accidental volume changes.
+      SingleActivator(LogicalKeyboardKey.space): () => _player?.playOrPause(),
+      SingleActivator(LogicalKeyboardKey.arrowLeft): () {
+        final nextPosition = _clampSeekPosition(
+          _player!.state.position - const Duration(seconds: 2),
+        );
+        _player!.seek(nextPosition);
+      },
+      SingleActivator(LogicalKeyboardKey.arrowRight): () {
+        final nextPosition = _clampSeekPosition(
+          _player!.state.position + const Duration(seconds: 2),
+        );
+        _player!.seek(nextPosition);
+      },
+      SingleActivator(LogicalKeyboardKey.keyJ): () {
+        final nextPosition = _clampSeekPosition(
+          _player!.state.position - const Duration(seconds: 10),
+        );
+        _player!.seek(nextPosition);
+      },
+      SingleActivator(LogicalKeyboardKey.keyI): () {
+        final nextPosition = _clampSeekPosition(
+          _player!.state.position + const Duration(seconds: 2),
+        );
+        _player!.seek(nextPosition);
+      },
+      SingleActivator(LogicalKeyboardKey.keyF): () => toggleFullscreen(context),
+      SingleActivator(LogicalKeyboardKey.escape): () => exitFullscreen(context),
+    };
+  }
+
   Widget _moviePlayerView() {
     final String? movieError = _movieError;
     if (movieError != null) {
@@ -115,16 +167,25 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_useMediaKit) {
-      return Video(
-        controller: _controller!,
-        controls: (VideoState state) {
-          if (isReady) {
-            return AdaptiveVideoControls(state);
-          } else {
-            return const SizedBox.shrink();
-          }
-        },
-      );
+      final Video video = Video(
+          controller: _controller!,
+          controls: (VideoState state) {
+            if (!isReady) return const SizedBox.shrink();
+            if (!preferDesktopControls) return AdaptiveVideoControls(state);
+            return Builder(builder: (context) {
+              final keyboardShortcuts = _materialDesktopKeyboardShortcuts(context);
+              return MaterialDesktopVideoControlsTheme(
+                normal: MaterialDesktopVideoControlsThemeData(
+                  keyboardShortcuts: keyboardShortcuts,
+                ),
+                fullscreen: MaterialDesktopVideoControlsThemeData(
+                  keyboardShortcuts: keyboardShortcuts,
+                ),
+                child: MaterialDesktopVideoControls(state),
+              );
+            });
+          });
+      return video;
     } else {
       return FlutterAVPlayerView(urlString: path);
     }

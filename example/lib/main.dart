@@ -126,6 +126,7 @@ class _PlaybackExamplePageState extends State<PlaybackExamplePage> {
           ? MoviePlayerWidget(
               path: playingUrl,
               forceMediaKit: _useEmbed,
+              preferDesktopControls: true,
               onPlaybackFinished: () => _onPlaybackFinished(stopEmbedded: true),
             )
           : const Center(child: Text('Choose a movie type and tap Play.')),

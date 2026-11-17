@@ -10,15 +10,27 @@ Key benefits:
   directly.
 - **Ready-to-use playback controls and callbacks**, including an optional
   playback-finished notification.
+- **Optional desktop-style media_kit controls** for keyboard-driven or
+  focus-sensitive layouts, with Arrow Up/Down intentionally omitted to avoid
+  stealing focus-navigation keys and accidental volume changes.
 
 `MoviePlayerWidget` displays video in the space provided by its parent widget.
 
-On iOS, `MoviePlayerWidget` uses `FlutterAVPlayerView` by default for AirPlay support. 
-Providing `onPlaybackFinished` automatically selects media_kit instead. You can also set
-`forceMediaKit: true` to explicitly select media_kit on iOS.
+On iOS, `MoviePlayerWidget` uses `FlutterAVPlayerView` by default for AirPlay support.
+Use `forceMediaKit: true` on iOS if `media_kit` instead of the native AirPlay-compatible 
+player should be used.
+
+Use `preferDesktopControls` when your app needs the default `media_kit` desktop controls 
+on other devices than desktop.
 
 Use `onPlaybackFinished` when your app needs to know that playback has ended,
 for example, to advance to the next movie or image in a continuous sequence.
+
+`media_kit` is selected automatically when any of these are true:
+- the app is not running on iOS
+- `forceMediaKit: true` is set
+- `preferDesktopControls: true` is set
+- `onPlaybackFinished` is provided
 
 ## Installation
 
@@ -92,6 +104,26 @@ MoviePlayerWidget(
 ```
 
 `FlutterAVPlayerView` does not expose playback-finished control.
+
+If you prefer the desktop-style media_kit controls, set `preferDesktopControls:
+true`. This switches to media_kit's desktop control layout for keyboard-driven
+or focus-sensitive layouts. The shortcut set intentionally omits Arrow Up/Down,
+which Flutter uses for widget focus traversal, so the default focus navigation is
+not hijacked and volume hotkeys do not accidentally fire when the video is
+focused.
+
+This is a desktop/keyboard-oriented control mode, not a dedicated TV remote
+control scheme. It is intended to avoid key conflicts, not to replace a custom
+TV-navigation UX.
+
+```dart
+MoviePlayerWidget(
+  path: videoPath,
+  preferDesktopControls: true,
+)
+```
+
+`FlutterAVPlayerView` does not expose playback controls.
 
 ## Playback lifecycle
 
