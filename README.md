@@ -123,8 +123,6 @@ MoviePlayerWidget(
 )
 ```
 
-`FlutterAVPlayerView` does not expose playback controls.
-
 ## Playback lifecycle
 
 The playback configuration (`path`, `forceMediaKit`, and callbacks) is read when
@@ -226,3 +224,7 @@ as well, and it did not help in our case.\
 The native iOS player is used for AirPlay support, not as the m3u8 workaround.
 Our m3u8 result is based on our own testing, may not apply to other HLS issues
 or streams, and does not guarantee playback of every m3u8 stream.
+
+## License
+
+See [LICENSE](LICENSE).
