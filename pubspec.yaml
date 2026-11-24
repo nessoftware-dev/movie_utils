@@ -1,5 +1,5 @@
 name: movie_utils
-description: "A ready-to-use Flutter video player with M3U8/HLS and iOS AirPlay support, and playback completion callbacks."
+description: "A ready-to-use Flutter video player with M3U8/HLS and iOS AirPlay support, and playback completion callback."
 version: 1.1.0
 homepage: https://github.com/nessoftware-dev/movie_utils
 repository: https://github.com/nessoftware-dev/movie_utils
