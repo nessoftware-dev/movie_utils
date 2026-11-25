@@ -1,3 +1,8 @@
+## 1.1.1
+
+* Improved analyzer and linter configuration.
+* Enhanced public API documentation with additional comments.
+
 ## 1.1.0
 
 * Added `preferDesktopControls` to `MoviePlayerWidget` to force media_kit's

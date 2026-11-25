@@ -2,13 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:movie_utils/movie_utils.dart';
 
+/// This example demonstrates MP4 and M3U8 playback with [MoviePlayerWidget].
+/// It initializes MediaKit and exposes two lifecycle modes:
+/// pushed mode (`_useEmbed = false`) runs the player on a separate route,
+/// while embedded mode keeps it in the widget tree and uses playback
+/// completion callbacks.
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   runApp(const MovieUtilsExampleApp());
 }
 
+/// The root widget for the movie_utils example app.
 class MovieUtilsExampleApp extends StatelessWidget {
+  /// Creates the root widget for the movie_utils example app.
   const MovieUtilsExampleApp({super.key});
 
   @override
@@ -23,7 +31,9 @@ class MovieUtilsExampleApp extends StatelessWidget {
 
 enum _MovieType { mp4, m3u8 }
 
+/// Demonstrates playback with the movie_utils package.
 class PlaybackExamplePage extends StatefulWidget {
+  /// Creates the playback example page.
   const PlaybackExamplePage({super.key});
 
   @override
@@ -149,11 +159,12 @@ class _PlaybackExamplePageState extends State<PlaybackExamplePage> {
     });
   }
 
-  void _playMovie() {
+  void _playMovie() async {
     final url = _urlController.text.trim();
     if (url.isEmpty) return;
     if (!_useEmbed) {
-      Navigator.of(context).push(
+      // Run the player on a separate route without callback parameters.
+      await Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => _MoviePlaybackPage(path: url),
         ),
@@ -172,6 +183,8 @@ class _PlaybackExamplePageState extends State<PlaybackExamplePage> {
   }
 }
 
+/// Displays [MoviePlayerWidget] on a separate route without callback parameters.
+/// On iOS, this allows MoviePlayerWidget to use the native iOS player with optional AirPlay support.
 class _MoviePlaybackPage extends StatelessWidget {
   final String path;
 

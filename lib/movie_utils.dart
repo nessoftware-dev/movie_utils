@@ -22,13 +22,24 @@ import 'package:media_kit_video/media_kit_video.dart';
 //
 // Solution: Force complete disposal before recreation which should be done via onDisposedPlayer.
 
+/// A widget that displays a movie and manages media playback.
 class MoviePlayerWidget extends StatefulWidget {
+  /// The path or URL of the movie to play.
   final String path;
+
+  /// Whether media_kit should be used instead of the platform player.
   final bool? forceMediaKit;
+
+  /// Whether desktop controls should be preferred for playback.
   final bool? preferDesktopControls;
+
+  /// Called when playback reaches the end of the movie.
   final VoidCallback? onPlaybackFinished;
+
+  /// Called after the media player has been fully disposed.
   final VoidCallback? onDisposedPlayer;
 
+  /// Creates a [MoviePlayerWidget].
   const MoviePlayerWidget({
     super.key,
     required this.path,
@@ -66,17 +77,21 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
     preferDesktopControls = widget.preferDesktopControls ?? false;
     onPlaybackFinished = widget.onPlaybackFinished;
     onDisposedPlayer = widget.onDisposedPlayer;
+    // Analyse whether media_kit should be used
     _useMediaKit = !Platform.isIOS || forceMediaKit || preferDesktopControls || (onPlaybackFinished != null);
     if (_useMediaKit) {
       _player = Player();
       WidgetsBinding.instance.addPostFrameCallback((_) async {
+        // Add listeners
         _installErrorListener();
         _installDurationListener();
         if (onPlaybackFinished != null) {
           _installCompletionListener();
         }
+        // Open the movie with no auto play
         await _player!.open(Media(path), play: false);
         if (!mounted) return;
+        // Set the video controller and update widget
         setState(() {
           _controller = VideoController(_player!);
         });
@@ -106,6 +121,7 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
     );
   }
 
+  /// Clamps a seek position to the valid duration range
   Duration _clampSeekPosition(Duration position) {
     final maxDuration = _player?.state.duration ?? Duration.zero;
     if (position < Duration.zero) {
@@ -117,6 +133,7 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
     return position;
   }
 
+  /// Return the required shortcuts for keyboard control without arrow up/down keys
   Map<ShortcutActivator, void Function()> _materialDesktopKeyboardShortcuts(
     BuildContext context,
   ) {
@@ -167,12 +184,14 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_useMediaKit) {
+      // Return the video widget with controller and controls
       final Video video = Video(
-          controller: _controller!,
-          controls: (VideoState state) {
-            if (!isReady) return const SizedBox.shrink();
-            if (!preferDesktopControls) return AdaptiveVideoControls(state);
-            return Builder(builder: (context) {
+        controller: _controller!,
+        controls: (VideoState state) {
+          if (!isReady) return const SizedBox.shrink();
+          if (!preferDesktopControls) return AdaptiveVideoControls(state);
+          return Builder(
+            builder: (context) {
               final keyboardShortcuts = _materialDesktopKeyboardShortcuts(context);
               return MaterialDesktopVideoControlsTheme(
                 normal: MaterialDesktopVideoControlsThemeData(
@@ -183,14 +202,18 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
                 ),
                 child: MaterialDesktopVideoControls(state),
               );
-            });
-          });
+            },
+          );
+        },
+      );
       return video;
     } else {
+      // Return native iOS player widget with optional AirPlay support
       return FlutterAVPlayerView(urlString: path);
     }
   }
 
+  /// Installs the error listener for error display (5 secs) and calling playback finished afterwards
   void _installErrorListener() {
     _player!.stream.error.listen((String error) {
       if (!mounted || _movieError != null) return;
@@ -207,6 +230,7 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
     });
   }
 
+  /// Installs the duration listener for starting playback
   void _installDurationListener() {
     _player!.stream.duration.listen((Duration duration) {
       if (duration > Duration.zero) {
@@ -220,6 +244,7 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
     });
   }
 
+  /// Installs the completion listener for calling playback finished
   void _installCompletionListener() {
     _player!.stream.completed.listen((bool completed) {
       if (completed) {
@@ -228,6 +253,7 @@ class _MoviePlayerWidget extends State<MoviePlayerWidget> {
     });
   }
 
+  /// Notifies the caller that playback has finished
   void _notifyPlaybackFinished() {
     if (_playbackFinishedNotified) return;
     _playbackFinishedNotified = true;
